@@ -66,18 +66,25 @@ def transfer():
             if getBalance(checksumAddress(wallet[0])) > 0:
                 try:
                     tokenTransfer(checksumAddress(wallet[0]), wallet[1], getBalance(checksumAddress(wallet[0])), recipientAddress)
-                except Exception:
+                except Exception as e:
+                    lblErr0 = Label(root, text = str(e))
+                    lblErr0.grid(column =5, row =1)
                     pass
 def tokenTransfer(Address, Key, amount, recipient):
-    nonce = web3.eth.getTransactionCount(Address)
-    transfer = tokenContract.functions.transfer(recipient, amount).buildTransaction({
-        'chainId':56, 
-        'gas': 3000000,
-        'gasPrice': web3.toWei('5','gwei'), 
-        'nonce':nonce
-    })
-    sign_txn = web3.eth.account.signTransaction(transfer, private_key=Key)
-    web3.eth.sendRawTransaction(sign_txn.rawTransaction) 
+    try:
+        nonce = web3.eth.getTransactionCount(Address)
+        transfer = tokenContract.functions.transfer(recipient, amount).buildTransaction({
+            'chainId':56, 
+            'gas': 3000000,
+            'gasPrice': web3.toWei('5','gwei'), 
+            'nonce':nonce
+        })
+        sign_txn = web3.eth.account.signTransaction(transfer, private_key=Key)
+        web3.eth.sendRawTransaction(sign_txn.rawTransaction) 
+    except Exception as e:
+        lblErr = Label(root, text = str(e))
+        lblErr.grid(column =5, row =0)
+        pass
 def main():
     global root,txt, web3, config, inputToken
     root = Tk()
