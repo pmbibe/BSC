@@ -75,7 +75,7 @@ def tokenTransfer(Address, Key, amount, recipient):
         nonce = web3.eth.getTransactionCount(Address)
         transfer = tokenContract.functions.transfer(recipient, amount).buildTransaction({
             'chainId':56, 
-            'gas': 3000000,
+            'gas': 300000,
             'gasPrice': web3.toWei('5','gwei'), 
             'nonce':nonce
         })
@@ -85,39 +85,30 @@ def tokenTransfer(Address, Key, amount, recipient):
         lblErr = Label(root, text = str(e))
         lblErr.grid(column =5, row =0)
         pass
-def waitForTransactionReceipt(transaction_hash):
-    responseCode = 1
-    while responseCode > 0:
-        try:
-            web3.eth.get_transaction_receipt(transaction_hash)
-            responseCode = 0
-        except Exception as e:
-            pass
-def TransferBNB():
-    Address = checksumAddress(inputAddressFrom.get())
-    Key = inputKey.get()
-    value = int(float(inputAmountBNB.get()) * 10**18)
-    recipient = checksumAddress(inputAddressTo.get())
-    try:
-        nonce = web3.eth.getTransactionCount(Address)
-        txTransferBNB = {
-            'to': recipient,
-            'value': value,
-            'chainId':56,
-            'gas': 3000000,
-            'gasPrice': web3.toWei('5','gwei'), 
-            'nonce':nonce
-        }
-        sign_txn = web3.eth.account.signTransaction(txTransferBNB, private_key=Key)
-        waitForTransactionReceipt(web3.eth.sendRawTransaction(sign_txn.rawTransaction))
-        lblNotice = Label(root, text = "Done")
-        lblNotice.grid(column =2, row =3)        
-    except Exception as e:
-        lblErr = Label(root, text = str(e))
-        lblErr.grid(column =5, row =0)
-        pass      
+def sendAllBNB():
+    recipientBNBAddress = checksumAddress(txt.get())
+    with open('config.csv') as csv_file:
+        config = csv.reader(csv_file, delimiter=',')
+        for wallet in config:
+            try:
+                nonce = web3.eth.getTransactionCount(checksumAddress(wallet[0]))
+                balanceBNB = web3.eth.get_balance(checksumAddress(wallet[0]))
+                transferFee = int(0.000105 * 10**18)
+                amountBNBTransfer = balanceBNB - transferFee
+                buyPresale = {
+                    'to': recipientBNBAddress,
+                    'value': amountBNBTransfer,
+                    'gas': 21000,
+                    'gasPrice': web3.toWei('5','gwei'),
+                    'nonce': nonce,
+                    'chainId': 56
+            }            
+            except Exception as e:
+                lblErr0 = Label(root, text = str(e))
+                lblErr0.grid(column =5, row =1)
+                pass    
 def main():
-    global root,txt, web3, config, inputToken, inputAddressFrom, inputAddressTo, inputKey, inputAmountBNB
+    global root,txt, web3, config, inputToken
     root = Tk()
     root.title("pmbibe")
     root.geometry('1200x500')
@@ -129,36 +120,20 @@ def main():
     btn.grid(column=2, row=0)
     btn = Button(root, text = "Transfer" , fg = "red", command=transfer)
     btn.grid(column=2, row=1)
+    btn = Button(root, text = "Transfer BNB" , fg = "red", command=sendAllBNB)
+    btn.grid(column=2, row=2)
     lbl = Label(root, text = "Token Address")
     lbl.grid(column =0, row =0)
     lbl = Label(root, text = "Recipient Address")
     lbl.grid(column =0, row =1)
-    lbl = Label(root, text = "Transfer BNB From")
-    lbl.grid(column =0, row =2)
-    inputAddressFrom = Entry(root, width=40)
-    inputAddressFrom.grid(column =1, row =2)
-    lbl = Label(root, text = "Private Key")
-    lbl.grid(column =0, row =3)
-    inputKey = Entry(root, width=40)
-    inputKey.grid(column =1, row =3)
-    lbl = Label(root, text = "Transfer BNB To")
-    lbl.grid(column =0, row =4)
-    inputAddressTo = Entry(root, width=40)
-    inputAddressTo.grid(column =1, row =4)
-    lbl = Label(root, text = "Amount BNB")
-    lbl.grid(column =0, row =5)
-    inputAmountBNB = Entry(root, width=40)
-    inputAmountBNB.grid(column =1, row =5)
-    btn = Button(root, text = "Transfer BNB" , fg = "red", command=TransferBNB)
-    btn.grid(column=2, row=2)
     lbl1 = Label(root, text = "Token Name")
-    lbl1.grid(column =0, row =6)
+    lbl1.grid(column =0, row =3)
     lbl2 = Label(root, text = "Wallet Address")
-    lbl2.grid(column =1, row =6)
+    lbl2.grid(column =1, row =3)
     lbl3 = Label(root, text = "Balance")
-    lbl3.grid(column =2, row =6)
+    lbl3.grid(column =2, row =3)
     lbl3 = Label(root, text = "Balance BNB")
-    lbl3.grid(column =3, row =6)
+    lbl3.grid(column =3, row =3)
     bsc = "https://bsc-dataseed.binance.org/"
     web3 = Web3(Web3.HTTPProvider(bsc))
     root.mainloop()
