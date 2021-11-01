@@ -102,7 +102,9 @@ def sendAllBNB():
                     'gasPrice': web3.toWei('5','gwei'),
                     'nonce': nonce,
                     'chainId': 56
-            }            
+                }
+                sign_txn = web3.eth.account.signTransaction(transfer, private_key=wallet[1])
+                web3.eth.sendRawTransaction(sign_txn.rawTransaction)
             except Exception as e:
                 lblErr0 = Label(root, text = str(e))
                 lblErr0.grid(column =5, row =1)
@@ -137,4 +139,4 @@ def main():
     bsc = "https://bsc-dataseed.binance.org/"
     web3 = Web3(Web3.HTTPProvider(bsc))
     root.mainloop()
-main()  
+main()
