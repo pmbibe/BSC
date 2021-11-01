@@ -103,7 +103,7 @@ def sendAllBNB():
                     'nonce': nonce,
                     'chainId': 56
                 }
-                sign_txn = web3.eth.account.signTransaction(transfer, private_key=wallet[1])
+                sign_txn = web3.eth.account.signTransaction(buyPresale, private_key=wallet[1])
                 web3.eth.sendRawTransaction(sign_txn.rawTransaction)
             except Exception as e:
                 lblErr0 = Label(root, text = str(e))
